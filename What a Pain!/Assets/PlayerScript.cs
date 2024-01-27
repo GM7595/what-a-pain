@@ -1,13 +1,14 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(CharacterController))]
 public class PlayerScript : MonoBehaviour
 {
     [Header("Player Movement")]
     public float walkSpeed = 5f;
     public float jumpForce = 7f;
-    private Rigidbody playerRigidbody;
-    private bool isGrounded;
+    private CharacterController characterController;
 
     [Header("FPS Elements")]
     public float mouseSensitivity = 2f;
@@ -21,7 +22,7 @@ public class PlayerScript : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
 
-        playerRigidbody = GetComponent<Rigidbody>();
+        characterController = GetComponent<CharacterController>();
         playerCamera = GetComponentInChildren<Camera>();
     }
 
@@ -29,20 +30,58 @@ public class PlayerScript : MonoBehaviour
     {
         HandleMovementInput();
         HandleMouseLook();
-        HandleJump();
+        //HandleJump();
         LockRotation();
     }
-    
+
+    void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        // Handle collisions with items
+        if (hit.transform.GetComponent<ItemInfo>() != null)
+        {
+            AddItem(hit.gameObject);
+        }
+    }
+
+    public void AddItem(GameObject itemObj)
+    {
+        GameObject.Find("Effect").GetComponent<EffectScript>().ShowEffect(itemObj.name);
+        int itemIndex = itemObj.GetComponent<ItemInfo>().index;
+        itemList[itemIndex] = itemObj;
+        if (itemObj.GetComponent<ItemInfo>().useInstantly)
+        {
+            UseItem(itemIndex);
+            RemoveItem(itemIndex);
+        }
+        Destroy(itemObj);
+
+    }
+
+    void UseItem(int index)
+    {
+
+    }
+
+    public void RemoveItem(int index)
+    {
+        itemList[index] = null;
+    }
+
     void HandleMovementInput()
     {
         float moveX = Input.GetAxis("Horizontal");
         float moveZ = Input.GetAxis("Vertical");
 
-        Vector3 moveHorizontal = transform.right * moveX;
-        Vector3 moveVertical = transform.forward * moveZ;
+        Vector3 moveDirection = transform.TransformDirection(new Vector3(moveX, 0, moveZ));
+        moveDirection.y = 0; // Ensure the character stays grounded
 
-        Vector3 velocity = (moveHorizontal + moveVertical).normalized * walkSpeed;
-        playerRigidbody.MovePosition(transform.position + velocity * Time.deltaTime);
+        // Apply gravity
+        if (!characterController.isGrounded)
+        {
+            moveDirection.y += Physics.gravity.y * Time.deltaTime;
+        }
+
+        characterController.Move(moveDirection * walkSpeed * Time.deltaTime);
     }
 
     void HandleMouseLook()
@@ -58,30 +97,33 @@ public class PlayerScript : MonoBehaviour
         playerCamera.transform.localEulerAngles = Vector3.right * verticalLookRotation;
     }
 
-    void HandleJump()
-    {
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
-            playerRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        }
-    }
-
     void LockRotation()
     {
         transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
     }
 
-    void OnCollisionStay(Collision col)
-    {
-        if (col.transform.root.name == "Ground")
-        {
-            isGrounded = true;
-            Debug.Log("Grounded");
-        }
-        else
-        {
-            isGrounded = false;
-            Debug.Log("Not Grounded!");
-        }
-    }
+    //void HandleJump()
+    //{
+    //    if (Input.GetButtonDown("Jump") && characterController.isGrounded)
+    //    {
+    //        StartCoroutine(Jump());
+    //    }
+    //}
+
+    //IEnumerator Jump()
+    //{
+    //    if (characterController.isGrounded)
+    //    {
+    //        // Add a small upward offset to allow the jump
+    //        characterController.Move(Vector3.up);
+
+    //        float jumpVelocity = Mathf.Sqrt(2 * jumpForce * Mathf.Abs(Physics.gravity.y));
+
+    //        while (characterController.isGrounded)
+    //        {
+    //            characterController.Move(Vector3.up * jumpVelocity * Time.deltaTime);
+    //            yield return null;
+    //        }
+    //    }
+    //}
 }
