@@ -30,6 +30,9 @@ public class PlayerScript : MonoBehaviour
     [Header("SFX")]
     public AudioClip sfx;
 
+    [Header("Pause Menu")]
+    public GameObject pauseMenu;
+
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -40,12 +43,11 @@ public class PlayerScript : MonoBehaviour
 
     void Update()
     {
-        //string result = "List contents: ";
-        //foreach (GameObject obj in itemList)
-        //{
-        //    result += obj.name + ", ";
-        //}
-        //Debug.Log(result);
+        // Hide/Show mouse cursor on Escape key press
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ToggleCursorLock();
+        }
 
         HandleMovementInput();
         HandleMouseLook();
@@ -78,6 +80,24 @@ public class PlayerScript : MonoBehaviour
                 if(matchIndex != -1 && currentItemIndex == matchIndex)
                     StartCoroutine(ThrowItem());
             }
+        }
+    }
+
+    void ToggleCursorLock()
+    {
+        if (Cursor.lockState == CursorLockMode.Locked)
+        {
+            pauseMenu.SetActive(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            Time.timeScale = 0;
+        }
+        else
+        {
+            Time.timeScale = 1;
+            pauseMenu.SetActive(false);
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
         }
     }
 

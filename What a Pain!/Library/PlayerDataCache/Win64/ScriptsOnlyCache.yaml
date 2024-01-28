@@ -925,7 +925,7 @@ ScriptsOnlyBuild:
     className: UnityOnMoveMessageListener
   - hash:
       serializedVersion: 2
-      Hash: d33bfe0aa7be18e24e38f4b38e8a2bcf
+      Hash: 256b6c87e292f6ab7ee2e75ec85e4aed
     assemblyName: Assembly-CSharp
     namespaceName: 
     className: PlayerScript
@@ -1022,5 +1022,4 @@ ScriptsOnlyBuild:
   platform: 19
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: /Users/gmapple/Documents/GitHub/what-a-pain/What a Pain!/what a pain/What
-    a Pain!.exe
+  playerPath: /Users/gmapple/Desktop/What a Pain! [Windows]/What a Pain!.exe
