@@ -10,38 +10,34 @@ public class EffectScript : MonoBehaviour
     public float fadeInDuration = 1.0f;  // Time taken for the image to fade in
     public float displayDuration = 2.0f;  // Time the image stays visible
     public float fadeOutDuration = 1.0f;  // Time taken for the image to fade out
+    public float alphaValue = 85f;
 
     TMP_Text textComp;
     private void Start()
     {
         textComp = GetComponentInChildren<TMP_Text>();
-        ResetText();
-
+        textComp.text = null;
         // Initialize the image to be transparent at the start
         rawImage = GetComponent<RawImage>();
         Color startColor = rawImage.color;
         startColor.a = 0f;
         rawImage.color = startColor;
+        alphaValue = alphaValue / 255f;
     }
 
     public void ShowEffect()
     {
         // Start the fade-in coroutine
+        StopAllCoroutines();
         StartCoroutine(FadeIn());
     }
 
     public void ShowEffect(string itemName)
     {
+        StopAllCoroutines();
         textComp.text = "Picked Up: " + itemName;
         // Start the fade-in coroutine
         StartCoroutine(FadeIn(itemName));
-
-        Invoke("ResetText", fadeInDuration + displayDuration + fadeOutDuration);
-    }
-
-    void ResetText()
-    {
-        textComp.text = null;
     }
 
     private IEnumerator FadeIn()
@@ -51,9 +47,12 @@ public class EffectScript : MonoBehaviour
         // Gradually increase the alpha value to make the image visible
         while (elapsedTime < fadeInDuration)
         {
+            Color textColor = textComp.color;
             Color currentColor = rawImage.color;
-            currentColor.a = Mathf.Lerp(0f, 1f, elapsedTime / fadeInDuration);
+            currentColor.a = Mathf.Lerp(0f, alphaValue, elapsedTime / fadeInDuration);
+            textColor.a = Mathf.Lerp(0f, 1, elapsedTime / fadeInDuration);
             rawImage.color = currentColor;
+            textComp.color = textColor;
 
             elapsedTime += Time.deltaTime;
             yield return null;
@@ -75,8 +74,11 @@ public class EffectScript : MonoBehaviour
         while (elapsedTime < fadeInDuration)
         {
             Color currentColor = rawImage.color;
-            currentColor.a = Mathf.Lerp(0f, 1f, elapsedTime / fadeInDuration);
+            Color textColor = textComp.color;
+            currentColor.a = Mathf.Lerp(0f, alphaValue, elapsedTime / fadeInDuration);
+            textColor.a = Mathf.Lerp(0f, 1, elapsedTime / fadeInDuration);
             rawImage.color = currentColor;
+            textComp.color = textColor;
 
             elapsedTime += Time.deltaTime;
             yield return null;
@@ -96,15 +98,16 @@ public class EffectScript : MonoBehaviour
         // Gradually decrease the alpha value to make the image invisible
         while (elapsedTime < fadeOutDuration)
         {
+            Color textColor = textComp.color;
             Color currentColor = rawImage.color;
-            currentColor.a = Mathf.Lerp(1f, 0f, elapsedTime / fadeOutDuration);
+            currentColor.a = Mathf.Lerp(alphaValue, 0f, elapsedTime / fadeOutDuration);
+            textColor.a = Mathf.Lerp(1, 0f, elapsedTime / fadeOutDuration);
             rawImage.color = currentColor;
+            textComp.color = textColor;
 
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-
-        // Optionally, you can destroy or deactivate the image object after fading out
-        Destroy(gameObject);
+        textComp.text = null;
     }
 }

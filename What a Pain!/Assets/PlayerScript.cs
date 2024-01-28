@@ -16,7 +16,16 @@ public class PlayerScript : MonoBehaviour
     private float verticalLookRotation;
 
     [Header("Items")]
-    public GameObject[] itemList = new GameObject[10];
+    public List<GameObject> itemList = new List<GameObject>();
+    public GameObject currentItem;
+    public int currentItemIndex;
+
+    [Header("Throwing")]
+    public float throwUpForce = 5f;
+    public float throwForwardForce = 7.5f;
+    public float throwDuration = 2.0f;
+    private bool isThrowing = false;
+    public int matchIndex = -1;    
 
     void Start()
     {
@@ -28,43 +37,116 @@ public class PlayerScript : MonoBehaviour
 
     void Update()
     {
+        //string result = "List contents: ";
+        //foreach (GameObject obj in itemList)
+        //{
+        //    result += obj.name + ", ";
+        //}
+        //Debug.Log(result);
+
         HandleMovementInput();
         HandleMouseLook();
-        //HandleJump();
         LockRotation();
+
+        if (itemList.Count > 0)
+        {
+            currentItem = itemList[currentItemIndex];
+        }
+        else currentItem = null;
+
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            if (currentItemIndex < itemList.Count - 1)
+                currentItemIndex += 1;
+            else currentItemIndex = 0;
+        }
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            if (currentItemIndex > 0)
+                currentItemIndex -= 1;
+            else currentItemIndex = itemList.Count - 1;
+        }
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            // Throw current item forward
+            if (currentItem != null && !isThrowing)
+            {
+                // ...if held item is the collided item
+                if(matchIndex != -1 && currentItemIndex == matchIndex)
+                    StartCoroutine(ThrowItem());
+            }
+        }
     }
 
     void OnControllerColliderHit(ControllerColliderHit hit)
     {
         // Handle collisions with items
-        if (hit.transform.GetComponent<ItemInfo>() != null)
+        if (hit.transform.GetComponent<ItemPickUp>() != null)
         {
-            AddItem(hit.gameObject);
+            Debug.Log(hit.transform.GetComponent<ItemPickUp>().itemPrefab.name);
+            AddItem(hit.transform.GetComponent<ItemPickUp>().itemPrefab);
+            Destroy(hit.gameObject);
         }
     }
 
     public void AddItem(GameObject itemObj)
     {
+        //Effect
         GameObject.Find("Effect").GetComponent<EffectScript>().ShowEffect(itemObj.name);
-        int itemIndex = itemObj.GetComponent<ItemInfo>().index;
-        itemList[itemIndex] = itemObj;
+
         if (itemObj.GetComponent<ItemInfo>().useInstantly)
         {
-            UseItem(itemIndex);
-            RemoveItem(itemIndex);
+            RemoveItem(itemObj);
+            Destroy(itemObj);
         }
-        Destroy(itemObj);
 
+        if (itemList.Count < 10)
+        {
+            itemList.Add(itemObj);
+        }
+        else Debug.Log("TOO FULL!!!");
     }
 
-    void UseItem(int index)
+    private void OnTriggerStay(Collider other)
     {
-
+        if (other.CompareTag("ItemDrop"))
+        {
+            if (itemList.Count > 0)
+            {
+                foreach (GameObject a in itemList)
+                {
+                    if (a.name == other.name)
+                    {
+                        matchIndex = itemList.IndexOf(a);
+                        break;
+                    }
+                    else matchIndex = -1;
+                }
+            }
+            else matchIndex = -1;
+        }
     }
 
-    public void RemoveItem(int index)
+    private void OnTriggerExit(Collider other)
     {
-        itemList[index] = null;
+        if (other.CompareTag("ItemDrop"))
+            matchIndex = -1;
+    }
+
+    public void RemoveItem(GameObject itemObj)
+    {
+        int index = itemList.IndexOf(itemObj);
+        if (index == 0)
+        {
+            if (itemList.Count == 1)
+            {
+                currentItem = null;
+                //Debug.Log("wahhh");
+            }
+        }
+        else if (index == itemList.Count - 1)
+                currentItemIndex -= 1; //move the pointer left if it's the last item
+        itemList.Remove(itemObj);
     }
 
     void HandleMovementInput()
@@ -102,28 +184,35 @@ public class PlayerScript : MonoBehaviour
         transform.rotation = Quaternion.Euler(0, transform.rotation.eulerAngles.y, 0);
     }
 
-    //void HandleJump()
-    //{
-    //    if (Input.GetButtonDown("Jump") && characterController.isGrounded)
-    //    {
-    //        StartCoroutine(Jump());
-    //    }
-    //}
+    IEnumerator ThrowItem()
+    {
+        isThrowing = true;
+        // Instantiate a temporary item object at the player's position
+        GameObject thrownItem = Instantiate(currentItem, transform.position + transform.forward, Quaternion.identity);
+        RemoveItem(currentItem);
+        Debug.Log(itemList.Count);
+        if (itemList.Count == 0)
+        {
+            matchIndex = -1;
+        }
 
-    //IEnumerator Jump()
-    //{
-    //    if (characterController.isGrounded)
-    //    {
-    //        // Add a small upward offset to allow the jump
-    //        characterController.Move(Vector3.up);
+        GameObject.Find("Announcement").GetComponent<AnnouncementScript>().Announce(thrownItem.GetComponent<ItemInfo>().pun);
+        Destroy(thrownItem.GetComponent<ItemInfo>());
+        thrownItem.AddComponent<Rigidbody>().AddForce(transform.forward * throwForwardForce + transform.up * throwUpForce, ForceMode.Impulse);
 
-    //        float jumpVelocity = Mathf.Sqrt(2 * jumpForce * Mathf.Abs(Physics.gravity.y));
+        float elapsedTime = 0f;
 
-    //        while (characterController.isGrounded)
-    //        {
-    //            characterController.Move(Vector3.up * jumpVelocity * Time.deltaTime);
-    //            yield return null;
-    //        }
-    //    }
-    //}
+        while (elapsedTime < throwDuration)
+        {
+            // Increment the elapsed time
+            elapsedTime += Time.deltaTime;
+
+            yield return null;
+        }
+
+        // Destroy the thrown item
+        Destroy(thrownItem);
+
+        isThrowing = false;
+    }
 }
