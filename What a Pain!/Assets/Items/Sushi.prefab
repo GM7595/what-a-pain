@@ -163,7 +163,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useInstantly: 0
   itemTexture: {fileID: 2800000, guid: 233e74182ff1643f3acbfd9579ce2b98, type: 3}
-  pun: "I would avoid the sushi if I was you. It\u2019s a little fishy."
+  pun: "\"I would avoid the sushi if I was you. It\u2019s a little fishy.\""
 --- !u!65 &6912415133781327617
 BoxCollider:
   m_ObjectHideFlags: 0

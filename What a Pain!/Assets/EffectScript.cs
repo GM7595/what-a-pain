@@ -35,7 +35,7 @@ public class EffectScript : MonoBehaviour
     public void ShowEffect(string itemName)
     {
         StopAllCoroutines();
-        textComp.text = "Picked Up: " + itemName;
+        textComp.text = itemName;
         // Start the fade-in coroutine
         StartCoroutine(FadeIn(itemName));
     }

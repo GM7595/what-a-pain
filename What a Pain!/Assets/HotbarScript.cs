@@ -84,32 +84,19 @@ public class HotbarScript : MonoBehaviour
         if (playerScript.matchIndex != -1)
         {
             tips.gameObject.SetActive(true);
-            switchslot = StartCoroutine(SwitchSlot());
-        }
-        else
-        {
-            if(switchslot != null)
-                StopCoroutine(switchslot);
-            tips.gameObject.SetActive(false);
-        }
-    }
-
-    IEnumerator SwitchSlot()
-    {
-        while (true)
-        {
-            slots[playerScript.matchIndex].texture = canThrowTexture;
             if (playerScript.matchIndex == playerScript.currentItemIndex)
             {
                 slots[playerScript.matchIndex].texture = willThrowTexture;
             }
-            yield return new WaitForSecondsRealtime(tips.duration);
-            slots[playerScript.matchIndex].texture = slotTexture;
-            if (playerScript.matchIndex == playerScript.currentItemIndex)
+            else slots[playerScript.matchIndex].texture = canThrowTexture;
+        }
+        else
+        {
+            if (switchslot != null)
             {
-                slots[playerScript.matchIndex].texture = selected;
+                StopCoroutine(switchslot);
             }
-            yield return new WaitForSecondsRealtime(tips.duration);
+            tips.gameObject.SetActive(false);
         }
     }
     //Spawns a square based on its index and returns each square

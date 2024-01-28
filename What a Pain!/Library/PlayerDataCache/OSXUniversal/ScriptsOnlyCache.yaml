@@ -138,6 +138,8 @@ ScriptsOnlyBuild:
       Script: {instanceID: 0}
     - Class: 136
       Script: {instanceID: 0}
+    - Class: 137
+      Script: {instanceID: 0}
     - Class: 143
       Script: {instanceID: 0}
     - Class: 157
@@ -923,7 +925,7 @@ ScriptsOnlyBuild:
     className: UnityOnMoveMessageListener
   - hash:
       serializedVersion: 2
-      Hash: c127f32465d95b2eda6e00ca4ca395c4
+      Hash: d33bfe0aa7be18e24e38f4b38e8a2bcf
     assemblyName: Assembly-CSharp
     namespaceName: 
     className: PlayerScript
@@ -1020,4 +1022,4 @@ ScriptsOnlyBuild:
   platform: 2
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: /Users/gmapple/Documents/GitHub/what-a-pain/What a Pain!/test.app
+  playerPath: /Users/gmapple/Desktop/What a pain.app

@@ -25,7 +25,10 @@ public class PlayerScript : MonoBehaviour
     public float throwForwardForce = 7.5f;
     public float throwDuration = 2.0f;
     private bool isThrowing = false;
-    public int matchIndex = -1;    
+    public int matchIndex = -1;
+
+    [Header("SFX")]
+    public AudioClip sfx;
 
     void Start()
     {
@@ -92,16 +95,17 @@ public class PlayerScript : MonoBehaviour
     public void AddItem(GameObject itemObj)
     {
         //Effect
-        GameObject.Find("Effect").GetComponent<EffectScript>().ShowEffect(itemObj.name);
+        GetComponent<AudioSource>().PlayOneShot(sfx);
 
         if (itemObj.GetComponent<ItemInfo>().useInstantly)
         {
-            RemoveItem(itemObj);
+            GameObject.Find("Announcement").GetComponent<AnnouncementScript>().Announce(itemObj.GetComponent<ItemInfo>().pun);
+            GameObject.Find("Effect").GetComponent<EffectScript>().ShowEffect(itemObj.name);
             Destroy(itemObj);
         }
-
-        if (itemList.Count < 10)
+        else if (itemList.Count < 10)
         {
+            GameObject.Find("Effect").GetComponent<EffectScript>().ShowEffect("Picked up: " + itemObj.name);
             itemList.Add(itemObj);
         }
         else Debug.Log("TOO FULL!!!");
